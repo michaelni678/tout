@@ -213,8 +213,8 @@ impl Parser {
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure
-    /// returns [`Ok`], the result is returned. Otherwise, the value is put back
-    /// for the next iteration.
+    /// returns [`Ok`], the result is returned. Otherwise, the token is added
+    /// back to the parser.
     pub fn next_tree_if_map<T, M>(&mut self, map: M) -> Option<T>
     where
         M: FnOnce(TokenTree) -> Result<T, TokenTree>,
@@ -229,8 +229,8 @@ impl Parser {
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure
-    /// returns [`Ok`] and the predicate returns `true`, the value is returned.
-    /// Otherwise, the value is put back for the next iteration.
+    /// returns [`Ok`] and the predicate returns `true`, the token is returned.
+    /// Otherwise, the token is added back to the parser.
     pub fn next_tree_if_map_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
     where
         T: Into<TokenTree>,

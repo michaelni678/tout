@@ -1,6 +1,7 @@
 //! Extension traits.
 
 use std::ffi::CStr;
+use std::iter;
 
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
@@ -46,7 +47,7 @@ impl TokenStreamExt for TokenStream {
     where
         T: Into<TokenTree>,
     {
-        self.extend(Some(token.into()));
+        self.extend(iter::once(token.into()));
     }
 }
 
@@ -75,7 +76,7 @@ pub trait TokenTreeExt: Sealed + Sized {
     where
         P: FnOnce(&Group) -> bool;
 
-    /// Returns `true` if the token tree is a ident and the predicate returns
+    /// Returns `true` if the token tree is an ident and the predicate returns
     /// `true`.
     fn is_ident_and<P>(&self, predicate: P) -> bool
     where
