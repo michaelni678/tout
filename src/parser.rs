@@ -505,6 +505,8 @@ impl Parser {
     /// assert_group_eq!(groups[0], group! { (self.function) });
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { (); });
     /// ```
+    /// 
+    /// See [`Parser::next_idents_while`] for another similar example.
     pub fn next_groups_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Group>
     where
         P: FnMut(&Group) -> bool,
@@ -521,16 +523,20 @@ impl Parser {
     /// # use proc_macro2::Ident;
     /// # use quote::quote;
     /// # use tout::assert::{assert_ident_eq, assert_stream_eq};
+    /// # use tout::extension::IdentExt;
     /// # use tout::quasi::ident;
     /// use tout::parser::Parser;
     ///
     /// let mut parser = Parser::new(quote! { let x = 5; });
     ///
-    /// let idents: Vec<Ident> = parser.next_idents_while(|ident| ident == "let").collect();
+    /// let idents: Vec<Ident> = parser.next_idents_while(|ident| !ident.is_raw()).collect();
     ///
     /// assert_ident_eq!(idents[0], ident! { let });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { x = 5; });
+    /// assert_ident_eq!(idents[1], ident! { x });
+    /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
     /// ```
+    /// 
+    /// See [`Parser::next_groups_while`] for another similar example.
     pub fn next_idents_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Ident>
     where
         P: FnMut(&Ident) -> bool,
