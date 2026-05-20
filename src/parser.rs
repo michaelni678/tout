@@ -127,6 +127,41 @@ impl Parser {
         output
     }
 
+    /// Takes the next tree and applies the function `map` to it. If the closure
+    /// returns [`Ok`], the result is returned. Otherwise, the token is added
+    /// back to the parser.
+    pub fn next_if_map<T, M>(&mut self, map: M) -> Option<T>
+    where
+        M: FnOnce(TokenTree) -> Result<T, TokenTree>,
+    {
+        match self.next_tree().map(map)? {
+            Ok(token) => Some(token),
+            Err(other) => {
+                self.tokens.push_front(other);
+                None
+            }
+        }
+    }
+
+    /// Takes the next tree and applies the function `map` to it. If the closure
+    /// returns [`Ok`] and the predicate returns `true`, the token is returned.
+    /// Otherwise, the token is added back to the parser.
+    pub fn next_if_map_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
+    where
+        T: Into<TokenTree>,
+        M: FnOnce(TokenTree) -> Result<T, TokenTree>,
+        P: FnOnce(&T) -> bool,
+    {
+        let other = match self.next_tree().map(map)? {
+            Ok(token) if predicate(&token) => return Some(token),
+            Ok(token) => token.into(),
+            Err(other) => other,
+        };
+
+        self.tokens.push_front(other);
+        None
+    }
+
     /// Takes the next tree. Returns [`None`] if there are no more tokens.
     ///
     /// # Examples
@@ -167,7 +202,7 @@ impl Parser {
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { ; });
     /// ```
     pub fn next_group(&mut self) -> Option<Group> {
-        self.next_tree_if_map(TokenTree::into_group)
+        self.next_if_map(TokenTree::into_group)
     }
 
     /// Takes the next token if it is an ident. Returns [`None`] if the next
@@ -189,7 +224,7 @@ impl Parser {
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
     /// ```
     pub fn next_ident(&mut self) -> Option<Ident> {
-        self.next_tree_if_map(TokenTree::into_ident)
+        self.next_if_map(TokenTree::into_ident)
     }
 
     /// Takes the next token if it is a punct. Returns [`None`] if the next
@@ -199,7 +234,7 @@ impl Parser {
     ///
     /// See [`Parser::next_group`] and [`Parser::next_ident`].
     pub fn next_punct(&mut self) -> Option<Punct> {
-        self.next_tree_if_map(TokenTree::into_punct)
+        self.next_if_map(TokenTree::into_punct)
     }
 
     /// Takes the next token if it is a literal. Returns [`None`] if the next
@@ -209,42 +244,7 @@ impl Parser {
     ///
     /// See [`Parser::next_group`] and [`Parser::next_ident`].
     pub fn next_literal(&mut self) -> Option<Literal> {
-        self.next_tree_if_map(TokenTree::into_literal)
-    }
-
-    /// Takes the next tree and applies the function `map` to it. If the closure
-    /// returns [`Ok`], the result is returned. Otherwise, the token is added
-    /// back to the parser.
-    pub fn next_tree_if_map<T, M>(&mut self, map: M) -> Option<T>
-    where
-        M: FnOnce(TokenTree) -> Result<T, TokenTree>,
-    {
-        match self.next_tree().map(map)? {
-            Ok(token) => Some(token),
-            Err(other) => {
-                self.tokens.push_front(other);
-                None
-            }
-        }
-    }
-
-    /// Takes the next tree and applies the function `map` to it. If the closure
-    /// returns [`Ok`] and the predicate returns `true`, the token is returned.
-    /// Otherwise, the token is added back to the parser.
-    pub fn next_tree_if_map_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
-    where
-        T: Into<TokenTree>,
-        M: FnOnce(TokenTree) -> Result<T, TokenTree>,
-        P: FnOnce(&T) -> bool,
-    {
-        let other = match self.next_tree().map(map)? {
-            Ok(token) if predicate(&token) => return Some(token),
-            Ok(token) => token.into(),
-            Err(other) => other,
-        };
-
-        self.tokens.push_front(other);
-        None
+        self.next_if_map(TokenTree::into_literal)
     }
 
     /// Takes the next tree if it matches the given predicate. Returns [`None`]
@@ -306,7 +306,7 @@ impl Parser {
     where
         P: FnOnce(&Group) -> bool,
     {
-        self.next_tree_if_map_and(TokenTree::into_group, predicate)
+        self.next_if_map_and(TokenTree::into_group, predicate)
     }
 
     /// Takes the next token if it is an ident and it matches the given
@@ -336,7 +336,7 @@ impl Parser {
     where
         P: FnOnce(&Ident) -> bool,
     {
-        self.next_tree_if_map_and(TokenTree::into_ident, predicate)
+        self.next_if_map_and(TokenTree::into_ident, predicate)
     }
 
     /// Takes the next token if it is a punct and it matches the given
@@ -350,7 +350,7 @@ impl Parser {
     where
         P: FnOnce(&Punct) -> bool,
     {
-        self.next_tree_if_map_and(TokenTree::into_punct, predicate)
+        self.next_if_map_and(TokenTree::into_punct, predicate)
     }
 
     /// Takes the next token if it is a literal and it matches the given
@@ -364,7 +364,7 @@ impl Parser {
     where
         P: FnOnce(&Literal) -> bool,
     {
-        self.next_tree_if_map_and(TokenTree::into_literal, predicate)
+        self.next_if_map_and(TokenTree::into_literal, predicate)
     }
 
     /// Returns an iterator over the rest of the tokens.
