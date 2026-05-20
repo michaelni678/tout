@@ -505,8 +505,8 @@ impl Parser {
     /// assert_group_eq!(groups[0], group! { (self.function) });
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { (); });
     /// ```
-    /// 
-    /// See [`Parser::next_idents_while`] for another similar example.
+    ///
+    /// See [`Parser::next_idents_while`] for another example.
     pub fn next_groups_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Group>
     where
         P: FnMut(&Group) -> bool,
@@ -535,8 +535,8 @@ impl Parser {
     /// assert_ident_eq!(idents[1], ident! { x });
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
     /// ```
-    /// 
-    /// See [`Parser::next_groups_while`] for another similar example.
+    ///
+    /// See [`Parser::next_groups_while`] for another example.
     pub fn next_idents_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Ident>
     where
         P: FnMut(&Ident) -> bool,
