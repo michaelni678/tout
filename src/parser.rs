@@ -185,7 +185,7 @@ impl Parser {
     /// 
     /// # Examples
     /// 
-    /// See [`Parser::next3_if_map`].
+    /// See [`Self::next3_if_map`].
     pub fn next2_if_map_and<T1, M1, P1, T2, M2, P2>(
         &mut self,
         map1: M1,
@@ -397,7 +397,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_group`] and [`Parser::next_ident`].
+    /// See [`Self::next_group`] and [`Self::next_ident`].
     pub fn next_punct(&mut self) -> Option<Punct> {
         self.next_if_map(TokenTree::into_punct)
     }
@@ -407,7 +407,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_group`] and [`Parser::next_ident`].
+    /// See [`Self::next_group`] and [`Self::next_ident`].
     pub fn next_literal(&mut self) -> Option<Literal> {
         self.next_if_map(TokenTree::into_literal)
     }
@@ -510,7 +510,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_group_if`] and [`Parser::next_ident_if`].
+    /// See [`Self::next_group_if`] and [`Self::next_ident_if`].
     pub fn next_punct_if<P>(&mut self, predicate: P) -> Option<Punct>
     where
         P: FnOnce(&Punct) -> bool,
@@ -524,7 +524,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_group_if`] and [`Parser::next_ident_if`].
+    /// See [`Self::next_group_if`] and [`Self::next_ident_if`].
     pub fn next_literal_if<P>(&mut self, predicate: P) -> Option<Literal>
     where
         P: FnOnce(&Literal) -> bool,
@@ -605,7 +605,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_groups`] and [`Parser::next_idents`].
+    /// See [`Self::next_groups`] and [`Self::next_idents`].
     pub fn next_puncts(&mut self) -> impl Iterator<Item = Punct> {
         iter::from_fn(|| self.next_punct())
     }
@@ -614,7 +614,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_groups`] and [`Parser::next_idents`].
+    /// See [`Self::next_groups`] and [`Self::next_idents`].
     pub fn next_literals(&mut self) -> impl Iterator<Item = Literal> {
         iter::from_fn(|| self.next_literal())
     }
@@ -671,7 +671,7 @@ impl Parser {
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { (); });
     /// ```
     ///
-    /// See [`Parser::next_idents_while`] for another example.
+    /// See [`Self::next_idents_while`] for another example.
     pub fn next_groups_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Group>
     where
         P: FnMut(&Group) -> bool,
@@ -701,7 +701,7 @@ impl Parser {
     /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
     /// ```
     ///
-    /// See [`Parser::next_groups_while`] for another example.
+    /// See [`Self::next_groups_while`] for another example.
     pub fn next_idents_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Ident>
     where
         P: FnMut(&Ident) -> bool,
@@ -714,7 +714,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_groups_while`] and [`Parser::next_idents_while`].
+    /// See [`Self::next_groups_while`] and [`Self::next_idents_while`].
     pub fn next_puncts_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Punct>
     where
         P: FnMut(&Punct) -> bool,
@@ -727,7 +727,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Parser::next_groups_while`] and [`Parser::next_idents_while`].
+    /// See [`Self::next_groups_while`] and [`Self::next_idents_while`].
     pub fn next_literals_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = Literal>
     where
         P: FnMut(&Literal) -> bool,
