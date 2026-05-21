@@ -22,8 +22,6 @@ proc-macro2 = "1"
 tout = "0.2.0"
 ```
 
----
-
 See the [documentation](https://docs.rs/tout) for more information.
 
 [`proc-macro2`]: https://crates.io/crates/proc-macro2
