@@ -170,6 +170,52 @@ impl Parser {
         None
     }
 
+    /// Takes the next two trees and applies the mapping functions. If they
+    /// return [`Ok`], the tokens are returned. Otherwise, they're added back to
+    /// the parser.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use proc_macro2::TokenTree;
+    /// # use quote::quote;
+    /// # use tout::assert::{assert_group_eq, assert_ident_eq, assert_stream_eq};
+    /// # use tout::extension::TokenTreeExt;
+    /// # use tout::quasi::{group, ident};
+    /// use tout::parser::Parser;
+    ///
+    /// let mut parser = Parser::new(quote! { data[3].x });
+    ///
+    /// let (ident, group) = parser
+    ///     .next2_if_map(TokenTree::into_ident, TokenTree::into_group)
+    ///     .unwrap();
+    ///
+    /// assert_ident_eq!(ident, ident! { data });
+    /// assert_group_eq!(group, group! { [3] });
+    /// assert_stream_eq!(parser.next_trees().collect(), quote! { .x });
+    /// ```
+    ///
+    /// If a predicate returns `false`, [`None`] is returned and the tokens are
+    /// added back to the parser.
+    ///
+    /// ```
+    /// # use proc_macro2::TokenTree;
+    /// # use quote::quote;
+    /// # use tout::assert::{assert_group_eq, assert_ident_eq, assert_stream_eq};
+    /// # use tout::extension::TokenTreeExt;
+    /// # use tout::quasi::{group, ident};
+    /// use tout::parser::Parser;
+    ///
+    /// let mut parser = Parser::new(quote! { data.x[3] });
+    ///
+    /// let parsed = parser.next2_if_map(
+    ///     TokenTree::into_ident,
+    ///     TokenTree::into_group, // Fails because token `.` is not a group.
+    /// );
+    ///
+    /// assert!(parsed.is_none());
+    /// assert_stream_eq!(parser.next_trees().collect(), quote! { data.x[3] });
+    /// ```
     pub fn next2_if_map<T1, M1, T2, M2>(&mut self, map1: M1, map2: M2) -> Option<(T1, T2)>
     where
         T1: Into<TokenTree>,
@@ -220,6 +266,13 @@ impl Parser {
         }
     }
 
+    /// Takes the next three trees and applies the mapping functions. If they
+    /// return [`Ok`], the tokens are returned. Otherwise, they're added back to
+    /// the parser.
+    ///
+    /// # Examples
+    ///
+    /// See [`Self::next2_if_map`].
     pub fn next3_if_map<T1, M1, T2, M2, T3, M3>(
         &mut self,
         map1: M1,
@@ -297,7 +350,7 @@ impl Parser {
     ///     TokenTree::into_group,
     ///     Group::is_parenthesized,
     ///     TokenTree::into_punct,
-    ///     |punct| punct.is_char('?'), // Fails because token is `*` not `?`.
+    ///     |punct| punct.is_char('?'), // Fails because token `*` is not `?`.
     /// );
     ///
     /// assert!(parsed.is_none());
