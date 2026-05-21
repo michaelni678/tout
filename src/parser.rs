@@ -130,6 +130,10 @@ impl Parser {
     /// Takes the next tree and applies the function `map` to it. If the closure
     /// returns [`Ok`], the result is returned. Otherwise, the token is added
     /// back to the parser.
+    ///
+    /// When mapping to [`TokenTree`] variants, consider using
+    /// [`Self::next_group`], [`Self::next_ident`], [`Self::next_punct`], or
+    /// [`Self::next_literal`] instead.
     pub fn next_if_map<T, M>(&mut self, map: M) -> Option<T>
     where
         M: FnOnce(TokenTree) -> Result<T, TokenTree>,
@@ -146,6 +150,10 @@ impl Parser {
     /// Takes the next tree and applies the function `map` to it. If the closure
     /// returns [`Ok`] and the predicate returns `true`, the token is returned.
     /// Otherwise, the token is added back to the parser.
+    ///
+    /// When mapping to [`TokenTree`] variants, consider using
+    /// [`Self::next_group_if`], [`Self::next_ident_if`],
+    /// [`Self::next_punct_if`], or [`Self::next_literal_if`] instead.
     pub fn next_if_map_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
     where
         T: Into<TokenTree>,
@@ -182,9 +190,9 @@ impl Parser {
     /// Takes the next two trees and applies the mapping functions. If they
     /// return [`Ok`] and the predicates return `true`, the tokens are returned.
     /// Otherwise, they're added back to the parser.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// See [`Self::next3_if_map`].
     pub fn next2_if_map_and<T1, M1, P1, T2, M2, P2>(
         &mut self,
