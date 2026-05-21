@@ -200,8 +200,7 @@ impl Parser {
     /// assert_stream_eq!(parser.stream(), quote! { .x });
     /// ```
     ///
-    /// If a predicate returns `false`, [`None`] is returned and the tokens are
-    /// added back to the parser.
+    /// If a mapping function returns [`Err`], this function returns [`None`].
     ///
     /// ```
     /// # use proc_macro2::TokenTree;
@@ -336,8 +335,8 @@ impl Parser {
     /// assert_stream_eq!(parser.stream(), quote! { % });
     /// ```
     ///
-    /// If a predicate returns `false`, [`None`] is returned and the tokens are
-    /// added back to the parser.
+    /// If a mapping function returns [`Err`] or a predicate returns `false`,
+    /// this function returns [`None`].
     ///
     /// ```
     /// # use proc_macro2::{Group, TokenTree};
