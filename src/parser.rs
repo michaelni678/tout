@@ -82,7 +82,7 @@ impl Parser {
     /// assert!(!parser.is_empty());
     ///
     /// // Consume the remaining tokens.
-    /// parser.next_trees().count();
+    /// parser.stream();
     ///
     /// assert!(parser.is_empty());
     /// ```
