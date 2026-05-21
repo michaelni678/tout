@@ -103,6 +103,11 @@ impl Parser {
         self.first().map_or_else(Span::call_site, TokenTree::span)
     }
 
+    /// Collects the remaining tokens and returns the token stream.
+    pub fn stream(&mut self) -> TokenStream {
+        self.next_trees().collect()
+    }
+
     /// Returns a token stream containing [`::core::compile_error!`] with the
     /// span of the next token.
     pub fn error(&mut self, message: impl Display) -> TokenStream {
@@ -192,7 +197,7 @@ impl Parser {
     ///
     /// assert_ident_eq!(ident, ident! { data });
     /// assert_group_eq!(group, group! { [3] });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { .x });
+    /// assert_stream_eq!(parser.stream(), quote! { .x });
     /// ```
     ///
     /// If a predicate returns `false`, [`None`] is returned and the tokens are
@@ -214,7 +219,7 @@ impl Parser {
     /// );
     ///
     /// assert!(parsed.is_none());
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { data.x[3] });
+    /// assert_stream_eq!(parser.stream(), quote! { data.x[3] });
     /// ```
     pub fn next2_if_map<T1, M1, T2, M2>(&mut self, map1: M1, map2: M2) -> Option<(T1, T2)>
     where
@@ -328,7 +333,7 @@ impl Parser {
     /// assert_punct_eq!(punct1, punct! { $ });
     /// assert_group_eq!(group, group! { (,) });
     /// assert_punct_eq!(punct2, punct! { ? });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { % });
+    /// assert_stream_eq!(parser.stream(), quote! { % });
     /// ```
     ///
     /// If a predicate returns `false`, [`None`] is returned and the tokens are
@@ -354,7 +359,7 @@ impl Parser {
     /// );
     ///
     /// assert!(parsed.is_none());
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { $(,)* % });
+    /// assert_stream_eq!(parser.stream(), quote! { $(,)* % });
     /// ```
     pub fn next3_if_map_and<T1, M1, P1, T2, M2, P2, T3, M3, P3>(
         &mut self,
@@ -425,7 +430,7 @@ impl Parser {
     /// assert_group_eq!(parser.next_group().unwrap(), group! { (self.function) });
     /// assert_group_eq!(parser.next_group().unwrap(), group! { () });
     /// assert!(parser.next_group().is_none());
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { ; });
+    /// assert_stream_eq!(parser.stream(), quote! { ; });
     /// ```
     pub fn next_group(&mut self) -> Option<Group> {
         self.next_if_map(TokenTree::into_group)
@@ -447,7 +452,7 @@ impl Parser {
     /// assert_ident_eq!(parser.next_ident().unwrap(), ident! { let });
     /// assert_ident_eq!(parser.next_ident().unwrap(), ident! { x });
     /// assert!(parser.next_ident().is_none());
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
+    /// assert_stream_eq!(parser.stream(), quote! { = 5; });
     /// ```
     pub fn next_ident(&mut self) -> Option<Ident> {
         self.next_if_map(TokenTree::into_ident)
@@ -494,7 +499,7 @@ impl Parser {
     /// let tree = parser.next_tree_if(|tree| matches!(tree, TokenTree::Group(_)));
     /// assert!(tree.is_none());
     ///
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { < 10 });
+    /// assert_stream_eq!(parser.stream(), quote! { < 10 });
     /// ```
     pub fn next_tree_if<P>(&mut self, predicate: P) -> Option<TokenTree>
     where
@@ -526,7 +531,7 @@ impl Parser {
     /// let group = parser.next_group_if(Group::is_braced);
     /// assert!(group.is_none());
     ///
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { (); });
+    /// assert_stream_eq!(parser.stream(), quote! { (); });
     /// ```
     pub fn next_group_if<P>(&mut self, predicate: P) -> Option<Group>
     where
@@ -556,7 +561,7 @@ impl Parser {
     /// let ident = parser.next_ident_if(|ident| ident == "y");
     /// assert!(ident.is_none());
     ///
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { x = 5; });
+    /// assert_stream_eq!(parser.stream(), quote! { x = 5; });
     /// ```
     pub fn next_ident_if<P>(&mut self, predicate: P) -> Option<Ident>
     where
@@ -610,7 +615,7 @@ impl Parser {
     ///
     /// assert_tree_eq!(trees[0], tree! { number });
     /// assert_tree_eq!(trees[1], tree! { < });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { 10 });
+    /// assert_stream_eq!(parser.stream(), quote! { 10 });
     /// ```
     pub fn next_trees(&mut self) -> impl Iterator<Item = TokenTree> {
         iter::from_fn(|| self.tokens.pop_front())
@@ -633,7 +638,7 @@ impl Parser {
     ///
     /// assert_group_eq!(groups[0], group! { (self.function) });
     /// assert_group_eq!(groups[1], group! { () });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { ; });
+    /// assert_stream_eq!(parser.stream(), quote! { ; });
     /// ```
     pub fn next_groups(&mut self) -> impl Iterator<Item = Group> {
         iter::from_fn(|| self.next_group())
@@ -656,7 +661,7 @@ impl Parser {
     ///
     /// assert_ident_eq!(idents[0], ident! { let });
     /// assert_ident_eq!(idents[1], ident! { x });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
+    /// assert_stream_eq!(parser.stream(), quote! { = 5; });
     /// ```
     pub fn next_idents(&mut self) -> impl Iterator<Item = Ident> {
         iter::from_fn(|| self.next_ident())
@@ -700,7 +705,7 @@ impl Parser {
     ///
     /// assert_tree_eq!(trees[0], tree! { number });
     /// assert_tree_eq!(trees[1], tree! { < });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { 10 });
+    /// assert_stream_eq!(parser.stream(), quote! { 10 });
     /// ```
     pub fn next_trees_while<P>(&mut self, mut predicate: P) -> impl Iterator<Item = TokenTree>
     where
@@ -729,7 +734,7 @@ impl Parser {
     ///     .collect();
     ///
     /// assert_group_eq!(groups[0], group! { (self.function) });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { (); });
+    /// assert_stream_eq!(parser.stream(), quote! { (); });
     /// ```
     ///
     /// See [`Self::next_idents_while`] for another example.
@@ -759,7 +764,7 @@ impl Parser {
     ///
     /// assert_ident_eq!(idents[0], ident! { let });
     /// assert_ident_eq!(idents[1], ident! { x });
-    /// assert_stream_eq!(parser.next_trees().collect(), quote! { = 5; });
+    /// assert_stream_eq!(parser.stream(), quote! { = 5; });
     /// ```
     ///
     /// See [`Self::next_groups_while`] for another example.
@@ -806,7 +811,7 @@ impl Debug for Parser {
 
 impl Display for Parser {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let stream: TokenStream = self.clone().next_trees().collect();
+        let stream: TokenStream = self.clone().stream();
         Display::fmt(&stream, f)
     }
 }
