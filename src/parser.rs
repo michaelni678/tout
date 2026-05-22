@@ -4,9 +4,10 @@ use std::collections::VecDeque;
 use std::fmt::{self, Debug, Display};
 use std::iter;
 
-use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
-use crate::extension::{GroupExt, LiteralExt, PunctExt, TokenStreamExt, TokenTreeExt};
+use crate::diagnostic::error;
+use crate::extension::TokenTreeExt;
 
 /// Parses a [`TokenStream`].
 #[derive(Clone)]
@@ -111,25 +112,7 @@ impl Parser {
     /// Returns a token stream containing [`::core::compile_error!`] with the
     /// span of the next token.
     pub fn error(&mut self, message: impl Display) -> TokenStream {
-        let span = self.span();
-        let message = message.to_string();
-
-        let mut output = TokenStream::new();
-
-        output.append(Punct::new_spanned(span, ':', Spacing::Joint));
-        output.append(Punct::new_spanned(span, ':', Spacing::Alone));
-        output.append(Ident::new("core", span));
-        output.append(Punct::new_spanned(span, ':', Spacing::Joint));
-        output.append(Punct::new_spanned(span, ':', Spacing::Alone));
-        output.append(Ident::new("compile_error", span));
-        output.append(Punct::new_spanned(span, '!', Spacing::Alone));
-        output.append(Group::new_spanned(
-            span,
-            Delimiter::Brace,
-            TokenStream::token(Literal::string_spanned(span, &message)),
-        ));
-
-        output
+        error(self.span(), message)
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure

@@ -19,7 +19,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 proc-macro2 = "1"
-tout = "0.2.0"
+tout = "0.3.0"
 ```
 
 See the [documentation](https://docs.rs/tout) for more information.
