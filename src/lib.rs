@@ -7,7 +7,7 @@
 //! ```toml
 //! [dependencies]
 //! proc-macro2 = "1"
-//! tout = "0.2.0"
+//! tout = "0.3.0"
 //! ```
 //!
 //! [`proc-macro2`]: https://crates.io/crates/proc-macro2
