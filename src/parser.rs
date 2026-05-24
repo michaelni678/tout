@@ -782,6 +782,123 @@ impl Parser {
     {
         iter::from_fn(move || self.next_literal_if(&mut predicate))
     }
+
+    /// Returns `true` if the next token is a group.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use quote::quote;
+    /// use tout::parser::Parser;
+    ///
+    /// let mut parser = Parser::new(quote! { data[x] });
+    ///
+    /// assert!(!parser.is_next_group());
+    ///
+    /// parser.skip_tree();
+    ///
+    /// assert!(parser.is_next_group());
+    /// ```
+    pub fn is_next_group(&self) -> bool {
+        self.first().map(TokenTree::is_group).unwrap_or(false)
+    }
+
+    /// Returns `true` if the next token is an ident.
+    ///
+    /// # Examples
+    ///
+    /// See [`Self::is_next_group`].
+    pub fn is_next_ident(&self) -> bool {
+        self.first().map(TokenTree::is_ident).unwrap_or(false)
+    }
+
+    /// Returns `true` if the next token is a punct.
+    ///
+    /// # Examples
+    ///
+    /// See [`Self::is_next_group`].
+    pub fn is_next_punct(&self) -> bool {
+        self.first().map(TokenTree::is_punct).unwrap_or(false)
+    }
+
+    /// Returns `true` if the next token is a literal.
+    ///
+    /// # Examples
+    ///
+    /// See [`Self::is_next_group`].
+    pub fn is_next_literal(&self) -> bool {
+        self.first().map(TokenTree::is_literal).unwrap_or(false)
+    }
+
+    /// Returns `true` and skips the next tree if the parser isn't empty.
+    pub fn skip_tree(&mut self) -> bool {
+        self.next_tree().is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a group.
+    pub fn skip_group(&mut self) -> bool {
+        self.next_group().is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's an ident.
+    pub fn skip_ident(&mut self) -> bool {
+        self.next_ident().is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a punct.
+    pub fn skip_punct(&mut self) -> bool {
+        self.next_punct().is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a literal.
+    pub fn skip_literal(&mut self) -> bool {
+        self.next_literal().is_some()
+    }
+
+    /// Returns `true` and skips the next tree if the parser isn't empty and the
+    /// predicate returns `true`.
+    pub fn skip_tree_if<P>(&mut self, predicate: P) -> bool
+    where
+        P: FnOnce(&TokenTree) -> bool,
+    {
+        self.next_tree_if(predicate).is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a group and the predicate
+    /// returns `true`.
+    pub fn skip_group_if<P>(&mut self, predicate: P) -> bool
+    where
+        P: FnOnce(&Group) -> bool,
+    {
+        self.next_group_if(predicate).is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's an ident and the
+    /// predicate returns `true`.
+    pub fn skip_ident_if<P>(&mut self, predicate: P) -> bool
+    where
+        P: FnOnce(&Ident) -> bool,
+    {
+        self.next_ident_if(predicate).is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a punct and the predicate
+    /// returns `true`.
+    pub fn skip_punct_if<P>(&mut self, predicate: P) -> bool
+    where
+        P: FnOnce(&Punct) -> bool,
+    {
+        self.next_punct_if(predicate).is_some()
+    }
+
+    /// Returns `true` and skips the next tree if it's a literal and the
+    /// predicate returns `true`.
+    pub fn skip_literal_if<P>(&mut self, predicate: P) -> bool
+    where
+        P: FnOnce(&Literal) -> bool,
+    {
+        self.next_literal_if(predicate).is_some()
+    }
 }
 
 impl Debug for Parser {
