@@ -1,7 +1,7 @@
 //! Token stream parser.
 
 use std::collections::VecDeque;
-use std::fmt::{self, Debug, Display};
+use std::fmt::{self, Debug, Display, Formatter};
 use std::iter;
 
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
@@ -38,7 +38,7 @@ impl Parser {
     /// assert_tree_eq!(*parser.first().unwrap(), tree! { number });
     ///
     /// // Advancing the parser will change the first token.
-    /// parser.next_tree();
+    /// parser.skip_tree();
     /// assert_tree_eq!(*parser.first().unwrap(), tree! { < });
     /// ```
     pub fn first(&self) -> Option<&TokenTree> {
@@ -61,7 +61,7 @@ impl Parser {
     /// assert_tree_eq!(*parser.peek(1).unwrap(), tree! { < });
     ///
     /// // Advancing the parser will change the peeked token.
-    /// parser.next_tree();
+    /// parser.skip_tree();
     /// assert_tree_eq!(*parser.peek(1).unwrap(), tree! { 10 });
     ///
     /// assert!(parser.peek(2).is_none());
@@ -796,7 +796,6 @@ impl Parser {
     /// assert!(!parser.is_next_group());
     ///
     /// parser.skip_tree();
-    ///
     /// assert!(parser.is_next_group());
     /// ```
     pub fn is_next_group(&self) -> bool {
@@ -902,14 +901,14 @@ impl Parser {
 }
 
 impl Debug for Parser {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         f.write_str("Parser ")?;
         f.debug_list().entries(self.clone().next_trees()).finish()
     }
 }
 
 impl Display for Parser {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let stream: TokenStream = self.clone().stream();
         Display::fmt(&stream, f)
     }
