@@ -835,22 +835,22 @@ impl Parser {
         self.next_tree().is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a group.
+    /// Returns `true` and skips the next token if it's a group.
     pub fn skip_group(&mut self) -> bool {
         self.next_group().is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's an ident.
+    /// Returns `true` and skips the next token if it's an ident.
     pub fn skip_ident(&mut self) -> bool {
         self.next_ident().is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a punct.
+    /// Returns `true` and skips the next token if it's a punct.
     pub fn skip_punct(&mut self) -> bool {
         self.next_punct().is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a literal.
+    /// Returns `true` and skips the next token if it's a literal.
     pub fn skip_literal(&mut self) -> bool {
         self.next_literal().is_some()
     }
@@ -864,8 +864,8 @@ impl Parser {
         self.next_tree_if(predicate).is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a group and the predicate
-    /// returns `true`.
+    /// Returns `true` and skips the next token if it's a group and the
+    /// predicate returns `true`.
     pub fn skip_group_if<P>(&mut self, predicate: P) -> bool
     where
         P: FnOnce(&Group) -> bool,
@@ -873,7 +873,7 @@ impl Parser {
         self.next_group_if(predicate).is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's an ident and the
+    /// Returns `true` and skips the next token if it's an ident and the
     /// predicate returns `true`.
     pub fn skip_ident_if<P>(&mut self, predicate: P) -> bool
     where
@@ -882,8 +882,8 @@ impl Parser {
         self.next_ident_if(predicate).is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a punct and the predicate
-    /// returns `true`.
+    /// Returns `true` and skips the next token if it's a punct and the
+    /// predicate returns `true`.
     pub fn skip_punct_if<P>(&mut self, predicate: P) -> bool
     where
         P: FnOnce(&Punct) -> bool,
@@ -891,7 +891,7 @@ impl Parser {
         self.next_punct_if(predicate).is_some()
     }
 
-    /// Returns `true` and skips the next tree if it's a literal and the
+    /// Returns `true` and skips the next token if it's a literal and the
     /// predicate returns `true`.
     pub fn skip_literal_if<P>(&mut self, predicate: P) -> bool
     where
