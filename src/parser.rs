@@ -1,4 +1,4 @@
-//! Token stream parser.
+//! Parse tokens.
 
 use std::collections::VecDeque;
 use std::fmt::{self, Debug, Display, Formatter};

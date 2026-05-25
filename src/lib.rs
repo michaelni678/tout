@@ -17,3 +17,4 @@ pub mod diagnostic;
 pub mod extension;
 pub mod parser;
 pub mod quasi;
+pub mod visitor;
