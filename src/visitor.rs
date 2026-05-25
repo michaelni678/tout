@@ -19,8 +19,8 @@ use crate::parser::Parser;
 /// # use quote::quote;
 /// # use tout::assert::assert_stream_eq;
 /// # use tout::extension::PunctExt;
-/// # use tout::parser::Parser;
 /// # use tout::quasi::ident;
+/// use tout::parser::Parser;
 /// use tout::visitor::{Visitor, visit_punct};
 ///
 /// pub struct ReplaceVariables(HashMap<Ident, TokenStream>);
