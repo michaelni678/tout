@@ -46,7 +46,7 @@ use crate::parser::Parser;
 /// let mut replace_variables = ReplaceVariables(HashMap::from([
 ///     // Replace `$method` with `duck`.
 ///     (ident! { method }, quote! { duck }),
-///     // Replace `$print` with "quack".
+///     // Replace `$print` with `"quack"`.
 ///     (ident! { print }, quote! { "quack" }),
 /// ]));
 ///
@@ -105,14 +105,7 @@ pub fn visit_stream<V>(visitor: &mut V, stream: TokenStream) -> TokenStream
 where
     V: Visitor + ?Sized,
 {
-    let mut parser = Parser::new(stream);
-    let mut output = TokenStream::new();
-
-    while let Some(tree) = parser.next_tree() {
-        output.extend(visitor.visit_tree(tree, &mut parser));
-    }
-
-    output
+    Parser::new(stream).visit(visitor)
 }
 
 /// Default function invoked when a [`TokenTree`] is encountered.

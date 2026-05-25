@@ -8,6 +8,7 @@ use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 use crate::diagnostic::error;
 use crate::extension::TokenTreeExt;
+use crate::visitor::Visitor;
 
 /// Parses a [`TokenStream`].
 #[derive(Clone)]
@@ -113,6 +114,22 @@ impl Parser {
     /// span of the next token.
     pub fn error(&mut self, message: impl Display) -> TokenStream {
         error(self.span(), message)
+    }
+
+    /// Visits the tokens in the parser.
+    /// 
+    /// See the documentation for the [`Visitor`] trait for more information.
+    pub fn visit<V>(&mut self, visitor: &mut V) -> TokenStream
+    where 
+        V: Visitor + ?Sized,
+    {
+        let mut output = TokenStream::new();
+
+        while let Some(tree) = self.next_tree() {
+            output.extend(visitor.visit_tree(tree, self));
+        }
+
+        output
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure
