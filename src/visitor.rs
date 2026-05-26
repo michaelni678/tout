@@ -43,12 +43,14 @@ use crate::parser::Parser;
 ///     }
 /// };
 ///
-/// let mut replace_variables = ReplaceVariables(HashMap::from([
+/// let mut visitor = ReplaceVariables(HashMap::from([
 ///     // Replace `$method` with `duck`.
 ///     (ident! { method }, quote! { duck }),
 ///     // Replace `$print` with `"quack"`.
 ///     (ident! { print }, quote! { "quack" }),
 /// ]));
+/// 
+/// let output = visitor.visit_stream(input);
 ///
 /// let expected = quote! {
 ///     fn duck() {
@@ -56,7 +58,7 @@ use crate::parser::Parser;
 ///     }
 /// };
 ///
-/// assert_stream_eq!(replace_variables.visit_stream(input), expected);
+/// assert_stream_eq!(output, expected);
 /// ```
 pub trait Visitor {
     /// Invoked when a [`TokenStream`] is encountered.
