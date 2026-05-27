@@ -117,19 +117,15 @@ impl Parser {
     }
 
     /// Visits the tokens in the parser.
-    /// 
+    ///
     /// See the documentation for the [`Visitor`] trait for more information.
-    pub fn visit<V>(&mut self, visitor: &mut V) -> TokenStream
-    where 
+    pub fn visit<V>(&mut self, visitor: &mut V, output: &mut TokenStream)
+    where
         V: Visitor + ?Sized,
     {
-        let mut output = TokenStream::new();
-
         while let Some(tree) = self.next_tree() {
-            output.extend(visitor.visit_tree(tree, self));
+            visitor.visit_tree(output, tree, self);
         }
-
-        output
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure

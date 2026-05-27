@@ -26,14 +26,15 @@ use crate::parser::Parser;
 /// pub struct ReplaceVariables(HashMap<Ident, TokenStream>);
 ///
 /// impl Visitor for ReplaceVariables {
-///     fn visit_punct(&mut self, punct: Punct, parser: &mut Parser) -> TokenStream {
+///     fn visit_punct(&mut self, output: &mut TokenStream, punct: Punct, parser: &mut Parser) {
 ///         if punct.is_char('$')
 ///             && let Some(ident) = parser.next_ident_if(|ident| self.0.contains_key(ident))
 ///         {
-///             return self.0[&ident].clone();
+///             output.extend(self.0[&ident].clone());
+///             return;
 ///         }
 ///
-///         visit_punct(self, punct, parser)
+///         visit_punct(self, output, punct, parser);
 ///     }
 /// }
 ///
@@ -49,8 +50,9 @@ use crate::parser::Parser;
 ///     // Replace `$print` with `"quack"`.
 ///     (ident! { print }, quote! { "quack" }),
 /// ]));
-/// 
-/// let output = visitor.visit_stream(input);
+///
+/// let mut output = TokenStream::new();
+/// visitor.visit_stream(&mut output, input);
 ///
 /// let expected = quote! {
 ///     fn duck() {
@@ -62,101 +64,116 @@ use crate::parser::Parser;
 /// ```
 pub trait Visitor {
     /// Invoked when a [`TokenStream`] is encountered.
-    fn visit_stream(&mut self, stream: TokenStream) -> TokenStream {
-        visit_stream(self, stream)
+    fn visit_stream(&mut self, output: &mut TokenStream, stream: TokenStream) {
+        visit_stream(self, output, stream)
     }
 
     /// Invoked when a [`TokenTree`] is encountered.
     ///
     /// The remaining unvisited tokens are available in `parser`.
-    fn visit_tree(&mut self, tree: TokenTree, parser: &mut Parser) -> TokenStream {
-        visit_tree(self, tree, parser)
+    fn visit_tree(&mut self, output: &mut TokenStream, tree: TokenTree, parser: &mut Parser) {
+        visit_tree(self, output, tree, parser)
     }
 
     /// Invoked when a [`Group`] is encountered.
     ///
     /// The remaining unvisited tokens are available in `parser`.
-    fn visit_group(&mut self, group: Group, parser: &mut Parser) -> TokenStream {
-        visit_group(self, group, parser)
+    fn visit_group(&mut self, output: &mut TokenStream, group: Group, parser: &mut Parser) {
+        visit_group(self, output, group, parser)
     }
 
     /// Invoked when an [`Ident`] is encountered.
     ///
     /// The remaining unvisited tokens are available in `parser`.
-    fn visit_ident(&mut self, ident: Ident, parser: &mut Parser) -> TokenStream {
-        visit_ident(self, ident, parser)
+    fn visit_ident(&mut self, output: &mut TokenStream, ident: Ident, parser: &mut Parser) {
+        visit_ident(self, output, ident, parser)
     }
 
     /// Invoked when a [`Punct`] is encountered.
     ///
     /// The remaining unvisited tokens are available in `parser`.
-    fn visit_punct(&mut self, punct: Punct, parser: &mut Parser) -> TokenStream {
-        visit_punct(self, punct, parser)
+    fn visit_punct(&mut self, output: &mut TokenStream, punct: Punct, parser: &mut Parser) {
+        visit_punct(self, output, punct, parser)
     }
 
     /// Invoked when a [`Literal`] is encountered.
     ///
     /// The remaining unvisited tokens are available in `parser`.
-    fn visit_literal(&mut self, literal: Literal, parser: &mut Parser) -> TokenStream {
-        visit_literal(self, literal, parser)
+    fn visit_literal(&mut self, output: &mut TokenStream, literal: Literal, parser: &mut Parser) {
+        visit_literal(self, output, literal, parser)
     }
 }
 
 /// Default function invoked when a [`TokenStream`] is encountered.
-pub fn visit_stream<V>(visitor: &mut V, stream: TokenStream) -> TokenStream
+pub fn visit_stream<V>(visitor: &mut V, output: &mut TokenStream, stream: TokenStream)
 where
     V: Visitor + ?Sized,
 {
-    Parser::new(stream).visit(visitor)
+    Parser::new(stream).visit(visitor, output)
 }
 
 /// Default function invoked when a [`TokenTree`] is encountered.
-pub fn visit_tree<V>(visitor: &mut V, tree: TokenTree, parser: &mut Parser) -> TokenStream
-where
+pub fn visit_tree<V>(
+    visitor: &mut V,
+    output: &mut TokenStream,
+    tree: TokenTree,
+    parser: &mut Parser,
+) where
     V: Visitor + ?Sized,
 {
     match tree {
-        TokenTree::Group(group) => visitor.visit_group(group, parser),
-        TokenTree::Ident(ident) => visitor.visit_ident(ident, parser),
-        TokenTree::Punct(punct) => visitor.visit_punct(punct, parser),
-        TokenTree::Literal(literal) => visitor.visit_literal(literal, parser),
+        TokenTree::Group(group) => visitor.visit_group(output, group, parser),
+        TokenTree::Ident(ident) => visitor.visit_ident(output, ident, parser),
+        TokenTree::Punct(punct) => visitor.visit_punct(output, punct, parser),
+        TokenTree::Literal(literal) => visitor.visit_literal(output, literal, parser),
     }
 }
 
 /// Default function invoked when a [`Group`] is encountered.
-pub fn visit_group<V>(visitor: &mut V, group: Group, _parser: &mut Parser) -> TokenStream
+pub fn visit_group<V>(visitor: &mut V, output: &mut TokenStream, group: Group, _parser: &mut Parser)
 where
     V: Visitor + ?Sized,
 {
-    let group = Group::new_spanned(
-        group.span(),
-        group.delimiter(),
-        visitor.visit_stream(group.stream()),
-    );
+    let mut inner = TokenStream::new();
+    visitor.visit_stream(&mut inner, group.stream());
 
-    TokenStream::token(group)
+    let group = Group::new_spanned(group.span(), group.delimiter(), inner);
+
+    output.append(group);
 }
 
 /// Default function invoked when an [`Ident`] is encountered.
-pub fn visit_ident<V>(_visitor: &mut V, ident: Ident, _parser: &mut Parser) -> TokenStream
-where
+pub fn visit_ident<V>(
+    _visitor: &mut V,
+    output: &mut TokenStream,
+    ident: Ident,
+    _parser: &mut Parser,
+) where
     V: Visitor + ?Sized,
 {
-    TokenStream::token(ident)
+    output.append(ident);
 }
 
 /// Default function invoked when a [`Punct`] is encountered.
-pub fn visit_punct<V>(_visitor: &mut V, punct: Punct, _parser: &mut Parser) -> TokenStream
-where
+pub fn visit_punct<V>(
+    _visitor: &mut V,
+    output: &mut TokenStream,
+    punct: Punct,
+    _parser: &mut Parser,
+) where
     V: Visitor + ?Sized,
 {
-    TokenStream::token(punct)
+    output.append(punct);
 }
 
 /// Default function invoked when a [`Literal`] is encountered.
-pub fn visit_literal<V>(_visitor: &mut V, literal: Literal, _parser: &mut Parser) -> TokenStream
-where
+pub fn visit_literal<V>(
+    _visitor: &mut V,
+    output: &mut TokenStream,
+    literal: Literal,
+    _parser: &mut Parser,
+) where
     V: Visitor + ?Sized,
 {
-    TokenStream::token(literal)
+    output.append(literal);
 }
