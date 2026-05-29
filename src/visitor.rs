@@ -28,9 +28,11 @@ use crate::parser::Parser;
 /// impl Visitor for ReplaceVariables {
 ///     fn visit_punct(&mut self, output: &mut TokenStream, punct: Punct, parser: &mut Parser) {
 ///         if punct.is_char('$')
-///             && let Some(ident) = parser.next_ident_if(|ident| self.0.contains_key(ident))
+///             && let Some(replacement) = parser
+///                 .next_ident_if_map(|ident| self.0.get(&ident).ok_or_else(|| ident))
+///                 .cloned()
 ///         {
-///             output.extend(self.0[&ident].clone());
+///             output.extend(replacement);
 ///             return;
 ///         }
 ///

@@ -140,9 +140,73 @@ impl Parser {
         M: FnOnce(TokenTree) -> Result<T, TokenTree>,
     {
         match self.next_tree().map(map)? {
-            Ok(token) => Some(token),
-            Err(other) => {
-                self.tokens.push_front(other);
+            Ok(mapped) => Some(mapped),
+            Err(tree) => {
+                self.tokens.push_front(tree);
+                None
+            }
+        }
+    }
+
+    /// Takes the next group and applies the function `map` to it. If the
+    /// closure returns [`Ok`], the result is returned. Otherwise, the token is
+    /// added back to the parser.
+    pub fn next_group_if_map<T, M>(&mut self, map: M) -> Option<T>
+    where
+        M: FnOnce(Group) -> Result<T, Group>,
+    {
+        match self.next_group().map(map)? {
+            Ok(mapped) => Some(mapped),
+            Err(group) => {
+                self.tokens.push_front(TokenTree::Group(group));
+                None
+            }
+        }
+    }
+
+    /// Takes the next ident and applies the function `map` to it. If the
+    /// closure returns [`Ok`], the result is returned. Otherwise, the token is
+    /// added back to the parser.
+    pub fn next_ident_if_map<T, M>(&mut self, map: M) -> Option<T>
+    where
+        M: FnOnce(Ident) -> Result<T, Ident>,
+    {
+        match self.next_ident().map(map)? {
+            Ok(mapped) => Some(mapped),
+            Err(ident) => {
+                self.tokens.push_front(TokenTree::Ident(ident));
+                None
+            }
+        }
+    }
+
+    /// Takes the next punct and applies the function `map` to it. If the
+    /// closure returns [`Ok`], the result is returned. Otherwise, the token is
+    /// added back to the parser.
+    pub fn next_punct_if_map<T, M>(&mut self, map: M) -> Option<T>
+    where
+        M: FnOnce(Punct) -> Result<T, Punct>,
+    {
+        match self.next_punct().map(map)? {
+            Ok(mapped) => Some(mapped),
+            Err(punct) => {
+                self.tokens.push_front(TokenTree::Punct(punct));
+                None
+            }
+        }
+    }
+
+    /// Takes the next literal and applies the function `map` to it. If the
+    /// closure returns [`Ok`], the result is returned. Otherwise, the token is
+    /// added back to the parser.
+    pub fn next_literal_if_map<T, M>(&mut self, map: M) -> Option<T>
+    where
+        M: FnOnce(Literal) -> Result<T, Literal>,
+    {
+        match self.next_literal().map(map)? {
+            Ok(mapped) => Some(mapped),
+            Err(literal) => {
+                self.tokens.push_front(TokenTree::Literal(literal));
                 None
             }
         }
@@ -162,8 +226,8 @@ impl Parser {
         P: FnOnce(&T) -> bool,
     {
         let other = match self.next_tree().map(map)? {
-            Ok(token) if predicate(&token) => return Some(token),
-            Ok(token) => token.into(),
+            Ok(mapped) if predicate(&mapped) => return Some(mapped),
+            Ok(mapped) => mapped.into(),
             Err(other) => other,
         };
 
