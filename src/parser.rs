@@ -379,7 +379,7 @@ impl Parser {
     ///
     /// # Examples
     ///
-    /// See [`Self::next3_if_map_trees`].
+    /// See [`Self::next3_if_map_trees_and`].
     pub fn next2_if_map_trees_and<T1, M1, P1, T2, M2, P2>(
         &mut self,
         map1: M1,
