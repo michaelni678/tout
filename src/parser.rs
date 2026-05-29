@@ -1,4 +1,4 @@
-//! Token stream parser.
+//! Parse tokens.
 
 use std::collections::VecDeque;
 use std::fmt::{self, Debug, Display, Formatter};
@@ -8,6 +8,7 @@ use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 use crate::diagnostic::error;
 use crate::extension::TokenTreeExt;
+use crate::visitor::Visitor;
 
 /// Parses a [`TokenStream`].
 #[derive(Clone)]
@@ -113,6 +114,18 @@ impl Parser {
     /// span of the next token.
     pub fn error(&mut self, message: impl Display) -> TokenStream {
         error(self.span(), message)
+    }
+
+    /// Visits the tokens in the parser.
+    ///
+    /// See the documentation for the [`Visitor`] trait for more information.
+    pub fn visit<V>(&mut self, visitor: &mut V, output: &mut TokenStream)
+    where
+        V: Visitor + ?Sized,
+    {
+        while let Some(tree) = self.next_tree() {
+            visitor.visit_tree(output, tree, self);
+        }
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure

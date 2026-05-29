@@ -7,7 +7,7 @@
 //! ```toml
 //! [dependencies]
 //! proc-macro2 = "1"
-//! tout = "0.3.0"
+//! tout = "0.4.0"
 //! ```
 //!
 //! [`proc-macro2`]: https://crates.io/crates/proc-macro2
@@ -17,3 +17,4 @@ pub mod diagnostic;
 pub mod extension;
 pub mod parser;
 pub mod quasi;
+pub mod visitor;
