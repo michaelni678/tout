@@ -213,7 +213,7 @@ impl Parser {
     }
 
     /// Takes the next tree and applies the function `map` to it. If the closure
-    /// returns [`Ok`] and the predicate returns `true`, the token is returned.
+    /// returns [`Ok`] and the predicate returns `true`, the result is returned.
     /// Otherwise, the token is added back to the parser.
     ///
     /// When mapping to [`TokenTree`] variants, consider using
@@ -225,18 +225,94 @@ impl Parser {
         M: FnOnce(TokenTree) -> Result<T, TokenTree>,
         P: FnOnce(&T) -> bool,
     {
-        let other = match self.next_tree().map(map)? {
-            Ok(mapped) if predicate(&mapped) => return Some(mapped),
-            Ok(mapped) => mapped.into(),
-            Err(other) => other,
-        };
+        let mapped = self.next_if_map_tree(map)?;
+        
+        if predicate(&mapped) {
+            Some(mapped)
+        } else {
+            self.tokens.push_front(mapped.into());
+            None
+        }
+    }
 
-        self.tokens.push_front(other);
-        None
+    /// Takes the next group and applies the function `map` to it. If the closure
+    /// returns [`Ok`] and the predicate returns `true`, the result is returned.
+    /// Otherwise, the token is added back to the parser.
+    pub fn next_if_map_group_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
+    where 
+        T: Into<TokenTree>,
+        M: FnOnce(Group) -> Result<T, Group>,
+        P: FnOnce(&T) -> bool,
+    {
+        let mapped = self.next_if_map_group(map)?;
+
+        if predicate(&mapped) {
+            Some(mapped)
+        } else {
+            self.tokens.push_front(mapped.into());
+            None
+        }
+    }
+
+    /// Takes the next ident and applies the function `map` to it. If the closure
+    /// returns [`Ok`] and the predicate returns `true`, the result is returned.
+    /// Otherwise, the token is added back to the parser.
+    pub fn next_if_map_ident_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
+    where 
+        T: Into<TokenTree>,
+        M: FnOnce(Ident) -> Result<T, Ident>,
+        P: FnOnce(&T) -> bool,
+    {
+        let mapped = self.next_if_map_ident(map)?;
+
+        if predicate(&mapped) {
+            Some(mapped)
+        } else {
+            self.tokens.push_front(mapped.into());
+            None
+        }
+    }
+
+    /// Takes the next punct and applies the function `map` to it. If the closure
+    /// returns [`Ok`] and the predicate returns `true`, the result is returned.
+    /// Otherwise, the token is added back to the parser.
+    pub fn next_if_map_punct_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
+    where 
+        T: Into<TokenTree>,
+        M: FnOnce(Punct) -> Result<T, Punct>,
+        P: FnOnce(&T) -> bool,
+    {
+        let mapped = self.next_if_map_punct(map)?;
+
+        if predicate(&mapped) {
+            Some(mapped)
+        } else {
+            self.tokens.push_front(mapped.into());
+            None
+        }
+    }
+
+    /// Takes the next literal and applies the function `map` to it. If the closure
+    /// returns [`Ok`] and the predicate returns `true`, the result is returned.
+    /// Otherwise, the token is added back to the parser.
+    pub fn next_if_map_literal_and<T, M, P>(&mut self, map: M, predicate: P) -> Option<T>
+    where 
+        T: Into<TokenTree>,
+        M: FnOnce(Literal) -> Result<T, Literal>,
+        P: FnOnce(&T) -> bool,
+    {
+        let mapped = self.next_if_map_literal(map)?;
+
+        if predicate(&mapped) {
+            Some(mapped)
+        } else {
+            self.tokens.push_front(mapped.into());
+            None
+        }
     }
 
     /// Takes the next two trees and applies the mapping functions. If they
-    /// return [`Ok`], the tokens are returned. Otherwise, they're added back to
+    /// return [`Ok`], the results are returned. Otherwise, they're added back to
     /// the parser.
     ///
     /// # Examples
@@ -298,7 +374,7 @@ impl Parser {
     }
 
     /// Takes the next two trees and applies the mapping functions. If they
-    /// return [`Ok`] and the predicates return `true`, the tokens are returned.
+    /// return [`Ok`] and the predicates return `true`, the results are returned.
     /// Otherwise, they're added back to the parser.
     ///
     /// # Examples
@@ -331,7 +407,7 @@ impl Parser {
     }
 
     /// Takes the next three trees and applies the mapping functions. If they
-    /// return [`Ok`], the tokens are returned. Otherwise, they're added back to
+    /// return [`Ok`], the results are returned. Otherwise, they're added back to
     /// the parser.
     ///
     /// # Examples
@@ -363,7 +439,7 @@ impl Parser {
     }
 
     /// Takes the next three trees and applies the mapping functions. If they
-    /// return [`Ok`] and the predicates return `true`, the tokens are returned.
+    /// return [`Ok`] and the predicates return `true`, the results are returned.
     /// Otherwise, they're added back to the parser.
     ///
     /// # Examples
