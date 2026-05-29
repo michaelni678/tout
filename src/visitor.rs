@@ -29,7 +29,7 @@ use crate::parser::Parser;
 ///     fn visit_punct(&mut self, output: &mut TokenStream, punct: Punct, parser: &mut Parser) {
 ///         if punct.is_char('$')
 ///             && let Some(replacement) = parser
-///                 .next_ident_if_map(|ident| self.0.get(&ident).ok_or_else(|| ident))
+///                 .next_if_map_ident(|ident| self.0.get(&ident).ok_or_else(|| ident))
 ///                 .cloned()
 ///         {
 ///             output.extend(replacement);
