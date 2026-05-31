@@ -220,20 +220,18 @@ type TokenHook<'a, T> = Box<dyn FnMut(&mut TokenStream, T, &mut Parser) -> Optio
 /// let mut output = TokenStream::new();
 ///
 /// Hooks::new()
-///     .punct(
-///         |output: &mut TokenStream, punct: Punct, parser: &mut Parser| {
-///             if punct.is_char('$')
-///                 && let Some(replacement) = parser
-///                     .next_if_map_ident(|ident| replacements.get(&ident).ok_or(ident))
-///                     .cloned()
-///             {
-///                 output.extend(replacement);
-///                 return None;
-///             }
+///     .punct(|output, punct, parser| {
+///         if punct.is_char('$')
+///             && let Some(replacement) = parser
+///                 .next_if_map_ident(|ident| replacements.get(&ident).ok_or(ident))
+///                 .cloned()
+///         {
+///             output.extend(replacement);
+///             return None;
+///         }
 ///
-///             Some(punct)
-///         },
-///     )
+///         Some(punct)
+///     })
 ///     .visit_stream(&mut output, input);
 ///
 /// let expected = quote! {
