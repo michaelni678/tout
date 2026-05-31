@@ -188,7 +188,8 @@ type TokenHook<'a, T> = Box<dyn FnMut(&mut TokenStream, T, &mut Parser) -> Optio
 ///
 /// Each hook corresponds to a visitor method. When a hook is missing or returns
 /// [`Some`], the corresponding default visit function is called. Returning
-/// [`None`] indicates that the hook has consumed the token.
+/// [`None`] indicates that the token has been consumed and should not be
+/// processed further.
 ///
 /// # Examples
 ///
@@ -218,7 +219,7 @@ type TokenHook<'a, T> = Box<dyn FnMut(&mut TokenStream, T, &mut Parser) -> Optio
 ///
 /// let mut output = TokenStream::new();
 ///
-/// Hooks::default()
+/// Hooks::new()
 ///     .punct(
 ///         |output: &mut TokenStream, punct: Punct, parser: &mut Parser| {
 ///             if punct.is_char('$')
@@ -254,6 +255,11 @@ pub struct Hooks<'a> {
 }
 
 impl<'a> Hooks<'a> {
+    /// Constructs a new hook-based visitor.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Sets the [`TokenStream`] hook.
     pub fn stream<F>(mut self, hook: F) -> Self
     where
