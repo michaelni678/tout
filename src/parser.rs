@@ -116,6 +116,19 @@ impl Parser {
         error(self.span(), message)
     }
 
+    /// Pushes `tree` to the front of the parser. This can be used to restore
+    /// tokens that were previously consumed.
+    ///
+    /// Most code should prefer the higher-level methods. This method is
+    /// intended as an escape hatch for advanced parsing scenarios where those
+    /// methods are not expressive enough.
+    ///
+    /// It is the caller's responsibility to restore tokens in the correct
+    /// order.
+    pub fn restore(&mut self, tree: impl Into<TokenTree>) {
+        self.tokens.push_front(tree.into());
+    }
+
     /// Visits the tokens in the parser.
     ///
     /// See the documentation for the [`Visitor`] trait for more information.
@@ -142,7 +155,7 @@ impl Parser {
         match self.next_tree().map(map)? {
             Ok(mapped) => Some(mapped),
             Err(tree) => {
-                self.tokens.push_front(tree);
+                self.restore(tree);
                 None
             }
         }
@@ -158,7 +171,7 @@ impl Parser {
         match self.next_group().map(map)? {
             Ok(mapped) => Some(mapped),
             Err(group) => {
-                self.tokens.push_front(TokenTree::Group(group));
+                self.restore(group);
                 None
             }
         }
@@ -174,7 +187,7 @@ impl Parser {
         match self.next_ident().map(map)? {
             Ok(mapped) => Some(mapped),
             Err(ident) => {
-                self.tokens.push_front(TokenTree::Ident(ident));
+                self.restore(ident);
                 None
             }
         }
@@ -190,7 +203,7 @@ impl Parser {
         match self.next_punct().map(map)? {
             Ok(mapped) => Some(mapped),
             Err(punct) => {
-                self.tokens.push_front(TokenTree::Punct(punct));
+                self.restore(punct);
                 None
             }
         }
@@ -206,7 +219,7 @@ impl Parser {
         match self.next_literal().map(map)? {
             Ok(mapped) => Some(mapped),
             Err(literal) => {
-                self.tokens.push_front(TokenTree::Literal(literal));
+                self.restore(literal);
                 None
             }
         }
@@ -230,7 +243,7 @@ impl Parser {
         if predicate(&mapped) {
             Some(mapped)
         } else {
-            self.tokens.push_front(mapped.into());
+            self.restore(mapped);
             None
         }
     }
@@ -249,7 +262,7 @@ impl Parser {
         if predicate(&mapped) {
             Some(mapped)
         } else {
-            self.tokens.push_front(mapped.into());
+            self.restore(mapped);
             None
         }
     }
@@ -268,7 +281,7 @@ impl Parser {
         if predicate(&mapped) {
             Some(mapped)
         } else {
-            self.tokens.push_front(mapped.into());
+            self.restore(mapped);
             None
         }
     }
@@ -287,7 +300,7 @@ impl Parser {
         if predicate(&mapped) {
             Some(mapped)
         } else {
-            self.tokens.push_front(mapped.into());
+            self.restore(mapped);
             None
         }
     }
@@ -306,7 +319,7 @@ impl Parser {
         if predicate(&mapped) {
             Some(mapped)
         } else {
-            self.tokens.push_front(mapped.into());
+            self.restore(mapped);
             None
         }
     }
@@ -367,7 +380,7 @@ impl Parser {
         match self.next_if_map_tree(map2) {
             Some(second) => Some((first, second)),
             None => {
-                self.tokens.push_front(first.into());
+                self.restore(first);
                 None
             }
         }
@@ -400,7 +413,7 @@ impl Parser {
         match self.next_if_map_tree_and(map2, predicate2) {
             Some(second) => Some((first, second)),
             None => {
-                self.tokens.push_front(first.into());
+                self.restore(first);
                 None
             }
         }
@@ -431,8 +444,8 @@ impl Parser {
         match self.next_if_map_tree(map3) {
             Some(third) => Some((first, second, third)),
             None => {
-                self.tokens.push_front(second.into());
-                self.tokens.push_front(first.into());
+                self.restore(second);
+                self.restore(first);
                 None
             }
         }
@@ -521,8 +534,8 @@ impl Parser {
         match self.next_if_map_tree_and(map3, predicate3) {
             Some(third) => Some((first, second, third)),
             None => {
-                self.tokens.push_front(second.into());
-                self.tokens.push_front(first.into());
+                self.restore(second);
+                self.restore(first);
                 None
             }
         }
